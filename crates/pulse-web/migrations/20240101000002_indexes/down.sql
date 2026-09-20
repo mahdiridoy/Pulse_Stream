@@ -1,0 +1,12 @@
+DROP INDEX IF EXISTS idx_users_email;
+DROP INDEX IF EXISTS idx_users_role;
+DROP INDEX IF EXISTS idx_sessions_token;
+DROP INDEX IF EXISTS idx_sessions_user_id;
+DROP INDEX IF EXISTS idx_sessions_expires_at;
+DROP INDEX IF EXISTS idx_favorites_user_id;
+DROP INDEX IF EXISTS idx_favorites_user_content;
+DROP INDEX IF EXISTS idx_watch_history_user_id;
+DROP INDEX IF EXISTS idx_watch_history_user_content;
+DROP INDEX IF EXISTS idx_watch_history_updated_at;
+DROP INDEX IF EXISTS idx_playlists_user_id;
+DROP INDEX IF EXISTS idx_addons_user_id;

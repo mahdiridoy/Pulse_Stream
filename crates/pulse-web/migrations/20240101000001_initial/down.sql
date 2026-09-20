@@ -1,0 +1,7 @@
+DROP TABLE IF EXISTS user_preferences;
+DROP TABLE IF EXISTS addons;
+DROP TABLE IF EXISTS playlists;
+DROP TABLE IF EXISTS watch_history;
+DROP TABLE IF EXISTS favorites;
+DROP TABLE IF EXISTS sessions;
+DROP TABLE IF EXISTS users;

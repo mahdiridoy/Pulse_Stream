@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /account
+Disallow: /login
+Disallow: /register
+Disallow: /admin
+Disallow: /api/
+
+Sitemap: https://pulsetream.com/sitemap.xml

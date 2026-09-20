@@ -1,0 +1,13 @@
+pub mod admin;
+pub mod anime;
+pub mod details;
+pub mod home;
+pub mod iptv;
+pub mod movies;
+pub mod providers;
+pub mod search;
+pub mod series;
+pub mod streams;
+pub mod subtitles;
+pub mod tv;
+pub mod v2;

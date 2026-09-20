@@ -1,0 +1,38 @@
+[package]
+name = "pulse-core"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90.0"
+description = "Shared core library for Pulse Stream - providers, models, services, and utilities"
+
+[dependencies]
+base64 = { workspace = true }
+rmp-serde = { workspace = true }
+dirs = { workspace = true }
+futures = { workspace = true }
+hmac = { workspace = true }
+image = { workspace = true }
+lru = { workspace = true }
+md-5 = { workspace = true }
+rand = { workspace = true }
+rustls = { workspace = true }
+scraper = { workspace = true }
+semver = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+url = { workspace = true }
+percent-encoding = { workspace = true }
+log = { workspace = true }
+flexi_logger = { workspace = true }
+hickory-resolver = { workspace = true }
+reqwest = { workspace = true }
+sha2 = { workspace = true }
+flate2 = { workspace = true }
+tar = { workspace = true }
+zip = { workspace = true }
+tempfile = { workspace = true }
+
+[lints]
+workspace = true
