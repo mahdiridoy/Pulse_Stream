@@ -5,6 +5,9 @@ members = [
     "crates/pulse-tui",
     "crates/pulse-web",
 ]
+default-members = [
+    "crates/pulse-tui",
+]
 
 [workspace.dependencies]
 # Async runtime

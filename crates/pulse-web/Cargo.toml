@@ -6,7 +6,7 @@ rust-version = "1.90.0"
 description = "Web server backend for Pulse Stream"
 
 [dependencies]
-pulse-core = { path = "../pulse-core" }
+pulse-core = { path = "../pulse-core", version = "0.1.0" }
 tokio = { workspace = true }
 axum = { workspace = true }
 tower = { workspace = true }
