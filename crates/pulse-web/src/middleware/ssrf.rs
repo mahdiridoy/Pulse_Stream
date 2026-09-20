@@ -4,10 +4,7 @@ use std::time::Duration;
 use url::Url;
 
 use hickory_resolver::TokioResolver;
-use hickory_resolver::config::{
-    CLOUDFLARE_IPS, GOOGLE_IPS, LookupIpStrategy, NameServerConfigGroup, QUAD9_IPS, ResolverConfig,
-};
-use hickory_resolver::name_server::TokioConnectionProvider;
+use hickory_resolver::config::{CLOUDFLARE, GOOGLE, LookupIpStrategy, QUAD9, ResolverConfig};
 use reqwest::dns::{Addrs, Name, Resolve, Resolving};
 
 // ---------------------------------------------------------------------------
@@ -220,22 +217,21 @@ pub fn validate_url(url_str: &str) -> Result<Url, SsrfError> {
 // SSRF-aware DNS resolver (wraps hickory-resolver)
 // ---------------------------------------------------------------------------
 
-const FALLBACK_DNS_PORT: u16 = 53;
-
 fn fallback_servers() -> Vec<std::net::IpAddr> {
-    let mut servers = Vec::with_capacity(CLOUDFLARE_IPS.len() + GOOGLE_IPS.len() + QUAD9_IPS.len());
-    servers.extend_from_slice(CLOUDFLARE_IPS);
-    servers.extend_from_slice(GOOGLE_IPS);
-    servers.extend_from_slice(QUAD9_IPS);
+    let mut servers = Vec::with_capacity(CLOUDFLARE.ips.len() + GOOGLE.ips.len() + QUAD9.ips.len());
+    servers.extend_from_slice(CLOUDFLARE.ips);
+    servers.extend_from_slice(GOOGLE.ips);
+    servers.extend_from_slice(QUAD9.ips);
     servers
 }
 
 fn fallback_config() -> ResolverConfig {
-    ResolverConfig::from_parts(
-        None,
-        Vec::new(),
-        NameServerConfigGroup::from_ips_clear(&fallback_servers(), FALLBACK_DNS_PORT, true),
-    )
+    let name_servers: Vec<_> = CLOUDFLARE
+        .udp_and_tcp()
+        .chain(GOOGLE.udp_and_tcp())
+        .chain(QUAD9.udp_and_tcp())
+        .collect();
+    ResolverConfig::from_name_servers(name_servers)
 }
 
 fn build_base_resolver() -> TokioResolver {
@@ -243,11 +239,11 @@ fn build_base_resolver() -> TokioResolver {
         Ok(builder) => builder,
         Err(_) => TokioResolver::builder_with_config(
             fallback_config(),
-            TokioConnectionProvider::default(),
+            hickory_resolver::net::runtime::TokioRuntimeProvider::default(),
         ),
     };
     builder.options_mut().ip_strategy = LookupIpStrategy::Ipv4AndIpv6;
-    builder.build()
+    builder.build().expect("failed to build DNS resolver")
 }
 
 /// DNS resolver that validates every resolved address against SSRF policy.
@@ -500,7 +496,10 @@ mod tests {
         let config = fallback_config();
         let servers = config.name_servers();
         assert!(servers.len() >= 12);
-        assert!(servers.iter().any(|server| server.socket_addr.ip()
-            == std::net::IpAddr::V4(std::net::Ipv4Addr::new(1, 1, 1, 1))));
+        assert!(
+            servers.iter().any(
+                |server| server.ip == std::net::IpAddr::V4(std::net::Ipv4Addr::new(1, 1, 1, 1))
+            )
+        );
     }
 }

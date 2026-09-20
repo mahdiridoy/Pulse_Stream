@@ -2,13 +2,9 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 
 use hickory_resolver::TokioResolver;
-use hickory_resolver::config::{
-    CLOUDFLARE_IPS, GOOGLE_IPS, LookupIpStrategy, NameServerConfigGroup, QUAD9_IPS, ResolverConfig,
-};
-use hickory_resolver::name_server::TokioConnectionProvider;
+use hickory_resolver::config::{CLOUDFLARE, GOOGLE, LookupIpStrategy, QUAD9, ResolverConfig};
 use reqwest::dns::{Addrs, Name, Resolve, Resolving};
 
-const FALLBACK_DNS_PORT: u16 = 53;
 pub const DEFAULT_BROWSER_USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 pub const APP_HTTP_USER_AGENT: &str = "MovieBox-Tui/1.0";
 
@@ -24,20 +20,22 @@ impl FallbackResolver {
     }
 }
 
+#[cfg(test)]
 fn fallback_servers() -> Vec<std::net::IpAddr> {
-    let mut servers = Vec::with_capacity(CLOUDFLARE_IPS.len() + GOOGLE_IPS.len() + QUAD9_IPS.len());
-    servers.extend_from_slice(CLOUDFLARE_IPS);
-    servers.extend_from_slice(GOOGLE_IPS);
-    servers.extend_from_slice(QUAD9_IPS);
+    let mut servers = Vec::with_capacity(CLOUDFLARE.ips.len() + GOOGLE.ips.len() + QUAD9.ips.len());
+    servers.extend_from_slice(CLOUDFLARE.ips);
+    servers.extend_from_slice(GOOGLE.ips);
+    servers.extend_from_slice(QUAD9.ips);
     servers
 }
 
 fn fallback_config() -> ResolverConfig {
-    ResolverConfig::from_parts(
-        None,
-        Vec::new(),
-        NameServerConfigGroup::from_ips_clear(&fallback_servers(), FALLBACK_DNS_PORT, true),
-    )
+    let name_servers: Vec<_> = CLOUDFLARE
+        .udp_and_tcp()
+        .chain(GOOGLE.udp_and_tcp())
+        .chain(QUAD9.udp_and_tcp())
+        .collect();
+    ResolverConfig::from_name_servers(name_servers)
 }
 
 fn build_resolver() -> TokioResolver {
@@ -45,11 +43,11 @@ fn build_resolver() -> TokioResolver {
         Ok(builder) => builder,
         Err(_) => TokioResolver::builder_with_config(
             fallback_config(),
-            TokioConnectionProvider::default(),
+            hickory_resolver::net::runtime::TokioRuntimeProvider::default(),
         ),
     };
     builder.options_mut().ip_strategy = LookupIpStrategy::Ipv4AndIpv6;
-    builder.build()
+    builder.build().expect("failed to build DNS resolver")
 }
 
 impl Resolve for FallbackResolver {
@@ -108,12 +106,15 @@ mod tests {
         let config = fallback_config();
         let servers = config.name_servers();
         assert!(servers.len() >= 12);
-        assert!(servers.iter().any(|server| server.socket_addr.ip()
-            == std::net::IpAddr::V4(std::net::Ipv4Addr::new(1, 1, 1, 1))));
+        assert!(
+            servers.iter().any(
+                |server| server.ip == std::net::IpAddr::V4(std::net::Ipv4Addr::new(1, 1, 1, 1))
+            )
+        );
         assert!(
             servers
                 .iter()
-                .any(|server| server.socket_addr.port() == FALLBACK_DNS_PORT)
+                .any(|server| server.connections.iter().any(|c| c.port == 53))
         );
     }
 
@@ -122,7 +123,7 @@ mod tests {
         let servers = fallback_servers();
         assert_eq!(
             servers.len(),
-            CLOUDFLARE_IPS.len() + GOOGLE_IPS.len() + QUAD9_IPS.len()
+            CLOUDFLARE.ips.len() + GOOGLE.ips.len() + QUAD9.ips.len()
         );
     }
 
