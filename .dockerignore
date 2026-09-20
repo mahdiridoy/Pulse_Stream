@@ -1,0 +1,40 @@
+# Git
+.git
+.gitignore
+
+# Node.js
+node_modules
+web/node_modules
+
+# Next.js
+.next
+web/.next
+
+# Rust
+target
+debug
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Environment files
+.env
+.env*.local
+.env.development
+.env.production
+
+# Build artifacts
+dist

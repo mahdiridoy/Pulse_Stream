@@ -134,6 +134,66 @@ moviebox-tui
 - Type any title to search, press `Enter` to play.
 - Press `?` inside the TUI for shortcuts, or type `/settings` for preferences.
 
+## Web Dashboard
+
+Pulse Stream includes a web dashboard built with Next.js for browser-based access.
+
+### Docker (Recommended)
+
+```bash
+# Clone the repository
+git clone https://github.com/mesamirh/MovieBox-Tui.git
+cd MovieBox-Tui
+
+# Configure environment
+cp .env.example .env
+# Edit .env and set JWT_SECRET to a secure random string
+
+# Start all services
+docker compose up -d
+
+# Access
+# Frontend: http://localhost:3000
+# Backend API: http://localhost:8080
+```
+
+### Local Development
+
+**Backend (Rust):**
+```bash
+# Install dependencies
+cp .env.example .env
+# Edit .env and set JWT_SECRET
+
+# Run the backend
+cargo run --bin pulse-web
+```
+
+**Frontend (Node.js):**
+```bash
+cd web
+
+# Install dependencies
+cp .env.example .env.local
+npm install
+
+# Start development server
+npm run dev
+```
+
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `JWT_SECRET` | Secret key for JWT tokens (required) | None (must set) |
+| `DATABASE_URL` | PostgreSQL connection string | `postgres://pulse:pulse_secret@localhost:5432/pulse_stream` |
+| `REDIS_URL` | Redis connection string | `redis://localhost:6379` |
+| `HOST` | Backend listen address | `0.0.0.0` |
+| `PORT` | Backend listen port | `8080` |
+| `FRONTEND_URL` | Frontend URL for CORS | `http://localhost:3000` |
+| `TRUST_PROXY` | Trust X-Forwarded-For headers | `false` |
+| `NEXT_PUBLIC_API_URL` | Backend API URL (frontend) | `http://localhost:8080` |
+
 ## Documentation
 
 Comprehensive guides and architectural references are available at [**mesamirh.github.io/MovieBox-Tui**](https://mesamirh.github.io/MovieBox-Tui/) or in the [`docs/`](docs/) directory.
